@@ -8,8 +8,18 @@
 
 import UIKit
 
-class HomeViewController: UIViewController {
+private let kTitleViewH: CGFloat = 40
 
+class HomeViewController: UIViewController {
+  // MARK:- lazy load properties
+  private lazy var pageTitleView: PageTitleView = {
+    let titleFrame = CGRect(x: 0, y: kStatusBarH + kNavigationBarH, width: kScreenW, height: kTitleViewH)
+    let titles = ["推薦", "遊戲", "娛樂", "趣玩"]
+    let titleView = PageTitleView(frame: titleFrame, titles: titles)
+    return titleView
+  }()
+  
+  // MARK:- system callback
   override func viewDidLoad() {
     super.viewDidLoad()
 
@@ -22,8 +32,14 @@ class HomeViewController: UIViewController {
 // MARK:- setup UI view
 extension HomeViewController {
   private func setupUI() {
+    // 0. disable auto adjusting scrollview insets
+    automaticallyAdjustsScrollViewInsets = false
+    
     // 1. setup navigation bar
     setupNavigationBar()
+    
+    // 2. setup title view
+    view.addSubview(pageTitleView)
   }
   
   private func setupNavigationBar() {
