@@ -8,11 +8,18 @@
 
 import UIKit
 
+protocol PageTitleViewDelegate: class {
+  func pageTitleView(titleView: PageTitleView, selectedIndex index: Int)
+}
+
 private let kScrollLineH: CGFloat = 2
 
 class PageTitleView: UIView {
+  
   // MARK:- properties
+  private  var currentIndex = 0
   private var titles: [String]
+  weak var delegate: PageTitleViewDelegate?
   
   // MARK:- load lazy properties
   private lazy var titleLabels = [UILabel]()
@@ -89,6 +96,11 @@ extension PageTitleView {
       // 4. add label into scrollView
       scrollView.addSubview(label)
       titleLabels.append(label)
+      
+      // 5. add gesture to label
+      label.isUserInteractionEnabled = true
+      let tapGes = UITapGestureRecognizer(target: self, action: #selector(self.titleLabelClick(tapGes:)))
+      label.addGestureRecognizer(tapGes)
     }
   }
   
@@ -107,5 +119,32 @@ extension PageTitleView {
     // 2.2 setup scrollLine properties
     scrollView.addSubview(scrollLine)
     scrollLine.frame = CGRect(x: firstLabel.frame.origin.x, y: frame.height - kScrollLineH, width: firstLabel.frame.width, height: kScrollLineH)
+  }
+}
+
+// MARK:- listening to label's click event
+extension PageTitleView {
+  @objc private func titleLabelClick(tapGes: UITapGestureRecognizer) {
+    // 1. get current label
+    guard let currentLabel = tapGes.view as? UILabel else { return }
+    
+    // 2. get last label
+    let oldLabel = titleLabels[currentIndex]
+    
+    // 3. switch text color
+    currentLabel.textColor = UIColor.orange
+    oldLabel.textColor = UIColor.darkGray
+    
+    // 4. save new label index
+    currentIndex = currentLabel.tag
+    
+    // 5. scroll line position changed
+    let scrollLineX = CGFloat(currentLabel.tag) * scrollLine.frame.width
+    UIView.animate(withDuration: 0.15) {
+      self.scrollLine.frame.origin.x = scrollLineX
+    }
+    
+    // 6. delegate
+    delegate?.pageTitleView(titleView: self, selectedIndex: currentIndex)
   }
 }
